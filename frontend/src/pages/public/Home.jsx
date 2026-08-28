@@ -3,9 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { bookService, categoryService } from '../../services/services';
-import { BookOpen, Search, ArrowRight, Sun, Moon, Star, Users, BookCopy, Shield, Sparkles, BarChart3, QrCode } from 'lucide-react';
-import heroBanner from '../../assets/hero-banner.jpg';
-import analyticsArt from '../../assets/analytics-art.jpg';
+import { BookOpen, Search, ArrowRight, Sun, Moon, Star, Users, BookCopy, Shield } from 'lucide-react';
 
 const Home = () => {
   const { user, isAdmin } = useAuth();
@@ -15,203 +13,121 @@ const Home = () => {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    bookService.getBooks({ limit: 8, sort: '-borrowCount' }).then(r => setFeaturedBooks(r.data.books)).catch(() => {});
-    categoryService.getCategories().then(r => setCategories(r.data)).catch(() => {});
+    bookService.getBooks({ limit: 8, sort: '-borrowCount' }).then(r => setFeaturedBooks(r.data.books)).catch(() => { });
+    categoryService.getCategories().then(r => setCategories(r.data)).catch(() => { });
   }, []);
 
   const dashboardLink = user ? (isAdmin ? '/admin/dashboard' : '/student/dashboard') : '/login';
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 bg-ambient-mesh">
+    <div className="min-h-screen bg-surface-50 dark:bg-surface-950">
       {/* Navbar */}
-      <nav className="glass-nav">
+      <nav className="sticky top-0 z-50 bg-white/80 dark:bg-surface-900/80 backdrop-blur-xl border-b border-surface-200/50 dark:border-surface-700/50">
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/25 group-hover:scale-105 transition-transform">
-              <BookOpen size={20} className="text-white" />
+          <Link to="/" className="flex items-center gap-2.5">
+            <div className="w-9 h-9 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/20">
+              <BookOpen size={18} className="text-white" />
             </div>
-            <span className="font-display font-extrabold text-xl bg-gradient-to-r from-white via-slate-200 to-indigo-200 bg-clip-text text-transparent">
-              LibraVerse
-            </span>
+            <span className="font-display font-bold text-lg text-surface-900 dark:text-white">LibraVerse</span>
           </Link>
-          <div className="flex items-center gap-3">
-            <button onClick={toggleTheme} className="p-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors">
-              {isDark ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
+          <div className="flex items-center gap-2">
+            <button onClick={toggleTheme} className="p-2.5 rounded-xl text-surface-500 hover:bg-surface-100 dark:hover:bg-surface-800">{isDark ? <Sun size={18} /> : <Moon size={18} />}</button>
             {user ? (
-              <Link to={dashboardLink} className="btn-primary text-sm">
-                Dashboard <ArrowRight size={16} />
-              </Link>
+              <Link to={dashboardLink} className="btn-primary text-sm">Dashboard</Link>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex gap-2">
                 <Link to="/login" className="btn-ghost text-sm">Sign In</Link>
-                <Link to="/register" className="btn-primary text-sm">Get Started</Link>
+                <Link to="/register" className="btn-primary text-sm">Register</Link>
               </div>
             )}
           </div>
         </div>
       </nav>
 
-      {/* Interactive Hero Section */}
-      <section className="relative overflow-hidden pt-12 pb-20 md:pt-16 md:pb-28">
-        <div className="max-w-7xl mx-auto px-4 md:px-6">
-          <div className="grid lg:grid-cols-12 gap-12 items-center">
-            {/* Left Content */}
-            <div className="lg:col-span-7 space-y-6 text-left animate-slide-up">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-semibold uppercase tracking-wider">
-                <Sparkles size={14} className="text-indigo-400 animate-pulse" /> Next-Gen Digital Library System
-              </div>
-              <h1 className="text-4xl md:text-6xl font-display font-extrabold text-white leading-tight">
-                Discover. Borrow.{' '}
-                <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  Read Anything.
-                </span>
-              </h1>
-              <p className="text-base md:text-lg text-slate-400 max-w-xl leading-relaxed">
-                Access thousands of physical & digital books with instant availability tracking, automatic fine management, QR book scans, and real-time reservation queues.
-              </p>
+      {/* Hero */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-600/5 via-transparent to-accent-600/5" />
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-20 md:py-32 text-center relative z-10">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 text-sm font-medium mb-6 animate-fade-in">
+            <Star size={14} /> Your Digital Library Platform
+          </div>
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold text-surface-900 dark:text-white mb-6 animate-slide-up">
+            Discover. Borrow.{' '}
+            <span className="bg-gradient-to-r from-primary-600 to-accent-500 bg-clip-text text-transparent">Read.</span>
+          </h1>
+          <p className="text-lg md:text-xl text-surface-500 dark:text-surface-400 max-w-2xl mx-auto mb-10 animate-slide-up">
+            Access thousands of books from our curated collection. Issue, reserve, and manage your reading journey — all in one place.
+          </p>
 
-              {/* Interactive Search Bar */}
-              <div className="relative max-w-xl pt-2">
-                <div className="relative group">
-                  <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-400 transition-colors" />
-                  <input
-                    type="text"
-                    placeholder="Search titles, authors, or ISBN..."
-                    className="w-full pl-12 pr-36 py-4 rounded-2xl border border-slate-800 bg-slate-900/90 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm shadow-2xl transition-all"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                  />
-                  <Link
-                    to={user ? `/student/books${search ? `?search=${search}` : ''}` : '/login'}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 btn-primary px-5 text-xs font-semibold py-2.5"
-                  >
-                    Search <ArrowRight size={14} />
-                  </Link>
-                </div>
-              </div>
-
-              {/* Badges */}
-              <div className="pt-4 flex flex-wrap items-center gap-6 text-xs text-slate-400">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                  <span>Real-time Inventory</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <QrCode size={14} className="text-indigo-400" />
-                  <span>QR Scan Enabled</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <BarChart3 size={14} className="text-purple-400" />
-                  <span>Automated Fines</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Interactive Image Banner */}
-            <div className="lg:col-span-5 relative animate-fade-in">
-              <div className="relative rounded-3xl overflow-hidden border border-slate-800/80 shadow-2xl shadow-indigo-500/10 group">
-                <img
-                  src={heroBanner}
-                  alt="Digital Library Preview"
-                  className="w-full h-auto object-cover rounded-3xl group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80" />
-                <div className="absolute bottom-6 left-6 right-6 p-4 rounded-2xl glass-card border border-white/10">
-                  <div className="flex items-center justify-between text-xs font-medium">
-                    <span className="text-indigo-300 font-display">✨ Digital Archive 2.0</span>
-                    <span className="badge-success text-[10px]">Active System</span>
-                  </div>
-                </div>
-              </div>
+          {/* Search */}
+          <div className="max-w-xl mx-auto animate-slide-up">
+            <div className="relative group">
+              <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400" />
+              <input
+                type="text"
+                placeholder="Search books by title, author, or ISBN..."
+                className="w-full pl-12 pr-32 py-4 rounded-2xl border border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-800 text-surface-900 dark:text-white shadow-lg shadow-surface-200/50 dark:shadow-black/20 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 text-base transition-all"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              <Link
+                to={user ? `/student/books${search ? `?search=${search}` : ''}` : '/login'}
+                className="absolute right-2 top-1/2 -translate-y-1/2 btn-primary px-5"
+              >
+                Search <ArrowRight size={16} />
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Metrics Row */}
-      <section className="max-w-7xl mx-auto px-4 md:px-6 mb-20">
+      {/* Stats */}
+      <section className="max-w-7xl mx-auto px-4 md:px-6 -mt-4 mb-16">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { icon: BookOpen, label: 'Total Books', value: '1,000+', color: 'from-indigo-500 to-blue-500' },
-            { icon: Users, label: 'Registered Readers', value: '500+', color: 'from-purple-500 to-pink-500' },
-            { icon: BookCopy, label: 'Issues Processed', value: '5,000+', color: 'from-cyan-500 to-teal-500' },
-            { icon: Shield, label: 'Active Categories', value: `${categories.length || 9}+`, color: 'from-amber-500 to-rose-500' },
-          ].map((item) => (
-            <div key={item.label} className="card p-5 flex items-center gap-4 hover:scale-[1.02] transition-transform">
-              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center shadow-lg`}>
-                <item.icon size={22} className="text-white" />
+            { icon: BookOpen, label: 'Books Available', value: '1000+', gradient: 'stat-gradient-1' },
+            { icon: Users, label: 'Active Readers', value: '500+', gradient: 'stat-gradient-4' },
+            { icon: BookCopy, label: 'Books Issued', value: '5000+', gradient: 'stat-gradient-3' },
+            { icon: Shield, label: 'Categories', value: `${categories.length}+`, gradient: 'stat-gradient-2' },
+          ].map((stat) => (
+            <div key={stat.label} className="card p-5 flex items-center gap-4">
+              <div className={`w-12 h-12 ${stat.gradient} rounded-xl flex items-center justify-center`}>
+                <stat.icon size={22} className="text-white" />
               </div>
               <div>
-                <p className="text-2xl font-extrabold font-display text-white">{item.value}</p>
-                <p className="text-xs text-slate-400 mt-0.5">{item.label}</p>
+                <p className="text-2xl font-bold font-display text-surface-900 dark:text-white">{stat.value}</p>
+                <p className="text-xs text-surface-400">{stat.label}</p>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Feature Visual Showcase */}
-      <section className="max-w-7xl mx-auto px-4 md:px-6 mb-20">
-        <div className="grid lg:grid-cols-2 gap-12 items-center card p-8 md:p-12 border-slate-800/80 bg-slate-900/40">
-          <div className="space-y-5">
-            <span className="badge-info">Interactive Dashboard</span>
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-white">
-              Real-time Analytics & Circulation Reports
-            </h2>
-            <p className="text-slate-400 text-sm leading-relaxed">
-              Track borrow rates by category, monthly issue volume, overdue fine collection, and student leaderboards with interactive Recharts visual representations.
-            </p>
-            <div className="pt-2 flex flex-col gap-3 text-xs text-slate-300">
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold">✓</div>
-                <span>Monthly borrowing vs returning comparative charts</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold">✓</div>
-                <span>Automatic reservation queue notifications</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold">✓</div>
-                <span>Export reports directly to CSV for administrative record-keeping</span>
-              </div>
-            </div>
-          </div>
-          <div className="rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
-            <img src={analyticsArt} alt="Analytics Visual Preview" className="w-full h-auto object-cover" />
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Books Catalog */}
+      {/* Featured Books */}
       {featuredBooks.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 md:px-6 mb-20">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-2xl font-display font-bold text-white">Popular Titles</h2>
-              <p className="text-xs text-slate-400 mt-1">Most frequently issued books in the collection</p>
-            </div>
-            <Link to={user ? '/student/books' : '/login'} className="btn-outline text-xs">
-              View Catalog <ArrowRight size={14} />
+        <section className="max-w-7xl mx-auto px-4 md:px-6 mb-16">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-display font-bold text-surface-900 dark:text-white">Popular Books</h2>
+            <Link to={user ? '/student/books' : '/login'} className="text-primary-600 hover:text-primary-700 text-sm font-medium flex items-center gap-1">
+              View All <ArrowRight size={14} />
             </Link>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
             {featuredBooks.map((book) => (
               <Link key={book._id} to={user ? `/books/${book._id}` : '/login'} className="card overflow-hidden group hover:scale-[1.02] transition-transform">
-                <div className="h-48 bg-slate-800 overflow-hidden relative">
+                <div className="h-44 bg-gradient-to-br from-primary-100 to-accent-100 dark:from-primary-900/30 dark:to-accent-900/30 overflow-hidden">
                   {book.coverImage ? (
                     <img src={book.coverImage} alt={book.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center"><BookOpen size={40} className="text-slate-600" /></div>
+                    <div className="w-full h-full flex items-center justify-center"><BookOpen size={36} className="text-primary-300" /></div>
                   )}
-                  <span className={`absolute top-2 right-2 text-[10px] ${book.availableCopies > 0 ? 'badge-success' : 'badge-danger'}`}>
-                    {book.availableCopies > 0 ? `${book.availableCopies} Copies` : 'Unavailable'}
-                  </span>
                 </div>
-                <div className="p-4 space-y-1">
-                  <h3 className="text-sm font-semibold text-white truncate">{book.title}</h3>
-                  <p className="text-xs text-slate-400">{book.author}</p>
-                  <p className="text-[10px] text-indigo-400 font-medium pt-1">{book.category?.name}</p>
+                <div className="p-3">
+                  <h3 className="text-sm font-semibold text-surface-900 dark:text-white line-clamp-1">{book.title}</h3>
+                  <p className="text-xs text-surface-400 mt-0.5">{book.author}</p>
+                  <span className={`text-[10px] mt-1.5 inline-block ${book.availableCopies > 0 ? 'badge-success' : 'badge-danger'}`}>
+                    {book.availableCopies > 0 ? 'Available' : 'Unavailable'}
+                  </span>
                 </div>
               </Link>
             ))}
@@ -219,16 +135,66 @@ const Home = () => {
         </section>
       )}
 
-      {/* Footer */}
-      <footer className="border-t border-slate-800/80 py-8 bg-slate-950">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
-              <BookOpen size={16} className="text-white" />
-            </div>
-            <span className="font-display font-bold text-white text-sm">LibraVerse LMS</span>
+      {/* Categories */}
+      {categories.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 md:px-6 mb-16">
+          <h2 className="text-2xl font-display font-bold text-surface-900 dark:text-white mb-6">Browse Categories</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            {categories.map((cat) => (
+              <div key={cat._id} className="card p-4 text-center hover:shadow-card-hover transition-all cursor-pointer group">
+                <div className="w-12 h-12 mx-auto rounded-xl bg-gradient-to-br from-primary-100 to-accent-100 dark:from-primary-900/30 dark:to-accent-900/30 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                  <BookOpen size={20} className="text-primary-500" />
+                </div>
+                <p className="text-sm font-medium text-surface-700 dark:text-surface-300">{cat.name}</p>
+              </div>
+            ))}
           </div>
-          <p className="text-xs text-slate-500">© {new Date().getFullYear()} LibraVerse. Built with Node.js, Express, React, and MongoDB.</p>
+        </section>
+      )}
+
+      {/* How It Works */}
+      <section className="bg-white dark:bg-surface-900 py-16 mb-16">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+          <h2 className="text-2xl font-display font-bold text-surface-900 dark:text-white text-center mb-10">How It Works</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              { step: '01', title: 'Browse & Search', desc: 'Explore our vast collection of books by title, author, or category.' },
+              { step: '02', title: 'Issue or Reserve', desc: 'Issue available books instantly or reserve unavailable ones to get notified.' },
+              { step: '03', title: 'Read & Return', desc: 'Enjoy your books and return them before the due date to avoid fines.' },
+            ].map((item) => (
+              <div key={item.step} className="text-center">
+                <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white font-display font-bold text-lg mb-4">{item.step}</div>
+                <h3 className="font-semibold text-surface-900 dark:text-white mb-2">{item.title}</h3>
+                <p className="text-sm text-surface-500 dark:text-surface-400">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="max-w-7xl mx-auto px-4 md:px-6 mb-16">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-primary-600 to-accent-600 p-10 md:p-16 text-center text-white">
+          <div className="relative z-10">
+            <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">Start Your Reading Journey</h2>
+            <p className="text-white/80 max-w-md mx-auto mb-6">Join LibraVerse today and get access to thousands of books at your fingertips.</p>
+            <Link to="/register" className="inline-flex items-center gap-2 px-8 py-3 bg-white text-primary-600 rounded-xl font-semibold hover:bg-white/90 transition-colors shadow-lg">
+              Get Started <ArrowRight size={18} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-surface-200 dark:border-surface-700/50 py-8">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 bg-gradient-to-br from-primary-500 to-accent-500 rounded-lg flex items-center justify-center">
+              <BookOpen size={14} className="text-white" />
+            </div>
+            <span className="font-display font-bold text-surface-700 dark:text-surface-300">LibraVerse</span>
+          </div>
+          <p className="text-sm text-surface-400">© {new Date().getFullYear()} LibraVerse. Built with MERN Stack.</p>
         </div>
       </footer>
     </div>
