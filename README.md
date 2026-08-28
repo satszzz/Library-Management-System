@@ -1,6 +1,14 @@
 # 📚 LibraVerse — Library Management System
 
-A full-stack **Library Management System** built with the **MERN Stack** (MongoDB, Express.js, React.js, Node.js). Features a premium modern UI, JWT authentication, role-based authorization, book catalog with search/filter, issue/return system with automatic fine calculation, reservation queue, notifications, dark mode, and comprehensive admin dashboard with analytics.
+A full-stack **Library Management System** built with the **MERN Stack** (MongoDB, Express.js, React.js, Node.js). Features a Cyberpunk / Modern Dark & Glassmorphic UI, JWT authentication, role-based authorization, book catalog with search/filter, issue/return system with automatic fine calculation, reservation queue, notifications, dark mode, and comprehensive admin dashboard with analytics.
+
+---
+
+## 🎨 Interactive UI Preview
+
+| Landing Page & Hero Showcase | Analytics & Dashboard Showcase |
+|---|---|
+| ![Hero Banner](frontend/src/assets/hero-banner.jpg) | ![Analytics Art](frontend/src/assets/analytics-art.jpg) |
 
 ---
 
@@ -30,14 +38,13 @@ A full-stack **Library Management System** built with the **MERN Stack** (MongoD
 - Activity logs tracking all admin actions
 
 ### 🎨 UI/UX
-- Premium modern design with Tailwind CSS
+- Cyberpunk & Glassmorphic theme with neon accents
 - Dark/Light mode with persistence
+- High-resolution 3D digital library hero banner & dashboard artwork
 - Responsive design (Desktop, Tablet, Mobile)
 - Smooth animations and micro-interactions
 - Loading skeletons and empty states
 - Toast notifications
-- Glass-morphism cards
-- Gradient stat cards
 
 ---
 
@@ -74,6 +81,7 @@ A full-stack **Library Management System** built with the **MERN Stack** (MongoD
 │
 ├── frontend/
 │   ├── src/
+│   │   ├── assets/ (hero-banner.jpg, analytics-art.jpg)
 │   │   ├── components/common/ (Navbar, Sidebar, Modal, Pagination, etc.)
 │   │   ├── components/books/ (BookCard)
 │   │   ├── components/dashboard/ (StatCard)
@@ -102,8 +110,8 @@ A full-stack **Library Management System** built with the **MERN Stack** (MongoD
 
 ### 1. Clone the Repository
 ```bash
-git clone <repo-url>
-cd "Library Management System (IssueReturn, Catalog)"
+git clone https://github.com/satszzz/Library-Management-System.git
+cd Library-Management-System
 ```
 
 ### 2. Backend Setup
@@ -129,84 +137,12 @@ http://localhost:5173
 
 ---
 
-## 🔑 Environment Variables
-
-Create `backend/.env`:
-
-```env
-PORT=5000
-MONGO_URI=mongodb://localhost:27017/library_management
-JWT_SECRET=your_jwt_secret_key_here
-JWT_EXPIRE=30d
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASSWORD=your_app_password
-CLIENT_URL=http://localhost:5173
-FINE_PER_DAY=5
-MAX_BORROW_LIMIT=3
-LOAN_PERIOD_DAYS=14
-RESERVATION_EXPIRY_HOURS=48
-```
-
----
-
 ## 👤 Demo Credentials
 
 | Role    | Email              | Password   |
 |---------|--------------------|------------|
 | Admin   | admin@library.com  | admin123   |
 | Student | rahul@student.com  | student123 |
-
-*(More student accounts: priya@student.com, amit@student.com, etc. — all with password `student123`)*
-
----
-
-## 📡 API Endpoints
-
-### Authentication
-| Method | Endpoint                  | Description          |
-|--------|---------------------------|----------------------|
-| POST   | /api/auth/register        | Register user        |
-| POST   | /api/auth/login           | Login user           |
-| GET    | /api/auth/me              | Get current user     |
-| PUT    | /api/auth/profile         | Update profile       |
-| PUT    | /api/auth/change-password | Change password      |
-
-### Books
-| Method | Endpoint              | Description          |
-|--------|-----------------------|----------------------|
-| GET    | /api/books            | Get all books        |
-| GET    | /api/books/:id        | Get single book      |
-| POST   | /api/books            | Create book (admin)  |
-| PUT    | /api/books/:id        | Update book (admin)  |
-| DELETE | /api/books/:id        | Delete book (admin)  |
-| GET    | /api/books/:id/qrcode | Get QR code          |
-
-### Issues
-| Method | Endpoint                  | Description            |
-|--------|---------------------------|------------------------|
-| POST   | /api/issues               | Issue a book           |
-| GET    | /api/issues               | Get all issues (admin) |
-| GET    | /api/issues/my            | Get my issues          |
-| PUT    | /api/issues/:id/return    | Return a book (admin)  |
-| PUT    | /api/issues/:id/pay-fine  | Mark fine paid (admin) |
-
-### Reservations, Users, Categories, Notifications, Reports
-*See route files for full endpoint documentation.*
-
----
-
-## 🔮 Future Improvements
-
-- File upload for book covers and profile images
-- Email verification on registration
-- Password reset flow
-- WebSocket real-time notifications
-- Book ratings and reviews
-- Advanced analytics with date range filters
-- PDF report generation
-- Barcode scanner integration
-- Multi-language support
-- PWA support
 
 ---
 
