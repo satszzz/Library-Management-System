@@ -1,18 +1,19 @@
-const StatCard = ({ title, value, icon: Icon, gradient = 'stat-gradient-1', subtitle, trend }) => (
-  <div className="card overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
-    <div className="p-5 flex items-start justify-between">
-      <div className="flex-1">
-        <p className="text-sm font-medium text-surface-500 dark:text-surface-400">{title}</p>
-        <p className="text-3xl font-bold font-display text-surface-900 dark:text-white mt-1">{value}</p>
-        {subtitle && <p className="text-xs text-surface-400 dark:text-surface-500 mt-1">{subtitle}</p>}
-        {trend && (
-          <p className={`text-xs font-medium mt-1.5 ${trend > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-            {trend > 0 ? '↑' : '↓'} {Math.abs(trend)}% from last month
+const StatCard = ({ title, value, icon: Icon, gradient = 'from-indigo-500 to-purple-500', subtitle, trend }) => (
+  <div className="card p-5 overflow-hidden relative group hover:scale-[1.02] transition-transform duration-300">
+    <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${gradient}`} />
+    <div className="flex items-start justify-between">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{title}</p>
+        <p className="text-3xl font-extrabold font-display text-slate-900 dark:text-white mt-1.5">{value}</p>
+        {subtitle && <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{subtitle}</p>}
+        {trend !== undefined && (
+          <p className={`text-xs font-semibold mt-2 flex items-center gap-1 ${trend > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+            <span>{trend > 0 ? '▲' : '▼'}</span> {Math.abs(trend)}% vs last month
           </p>
         )}
       </div>
-      <div className={`w-12 h-12 ${gradient} rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
-        <Icon size={22} className="text-white" />
+      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform`}>
+        <Icon size={22} />
       </div>
     </div>
   </div>
