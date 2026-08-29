@@ -1,65 +1,80 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
-import { LogIn, Eye, EyeOff } from 'lucide-react';
-import toast from 'react-hot-toast';
 
 const Login = () => {
-  const { login } = useAuth();
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ email: '', password: '' });
-  const [showPassword, setShowPassword] = useState(false);
+  const { login } = useAuth();
+  const [form, setForm] = useState({ email: '', password: '' });
+  const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const user = await login(formData.email, formData.password);
+      const user = await login(form.email, form.password);
       toast.success(`Welcome back, ${user.name}!`);
-      navigate(user.role === 'admin' ? '/admin/dashboard' : '/student/dashboard');
+      navigate('/dashboard');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Login failed');
+      toast.error(err.message || 'Invalid email or password');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="animate-fade-in">
-      <h1 className="text-3xl font-display font-bold text-surface-900 dark:text-white mb-2">Welcome back</h1>
-      <p className="text-surface-500 dark:text-surface-400 mb-8">Sign in to access your library account.</p>
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
+      <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">
+        Welcome back
+      </h1>
+      <p className="text-surface-400 dark:text-surface-500 mb-8">
+        Sign in to continue your reading journey
+      </p>
 
       <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Email */}
         <div>
-          <label className="input-label">Email Address</label>
-          <input
-            type="email"
-            className="input"
-            placeholder="you@example.com"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            required
-          />
+          <label className="input-label">Email</label>
+          <div className="relative">
+            <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400" />
+            <input
+              type="email"
+              required
+              placeholder="you@university.edu"
+              className="input pl-11"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+            />
+          </div>
         </div>
 
+        {/* Password */}
         <div>
           <label className="input-label">Password</label>
           <div className="relative">
+            <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400" />
             <input
-              type={showPassword ? 'text' : 'password'}
-              className="input pr-11"
-              placeholder="Enter your password"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              type={showPass ? 'text' : 'password'}
               required
+              placeholder="Enter your password"
+              className="input pl-11 pr-11"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
             />
             <button
               type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-600"
+              onClick={() => setShowPass(!showPass)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-600 transition-colors"
             >
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
         </div>
@@ -67,26 +82,25 @@ const Login = () => {
         <button
           type="submit"
           disabled={loading}
-          className="btn-primary w-full py-3 text-base"
+          className="btn-gradient w-full py-3 text-base"
         >
           {loading ? (
             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
           ) : (
             <>
-              <LogIn size={18} />
-              Sign In
+              Sign In <ArrowRight size={18} />
             </>
           )}
         </button>
       </form>
 
-      <p className="text-center text-sm text-surface-500 dark:text-surface-400 mt-6">
-        Don't have an account?{' '}
-        <Link to="/register" className="text-primary-600 hover:text-primary-700 font-medium">
-          Create Account
+      <p className="text-center text-sm text-surface-400 dark:text-surface-500 mt-8">
+        Don&apos;t have an account?{' '}
+        <Link to="/register" className="text-primary-600 dark:text-primary-400 font-medium hover:underline">
+          Create one
         </Link>
       </p>
-    </div>
+    </motion.div>
   );
 };
 

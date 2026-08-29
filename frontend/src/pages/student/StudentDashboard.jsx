@@ -1,125 +1,284 @@
-import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import {
+  BookOpen,
+  BookOpenCheck,
+  Heart,
+  Flame,
+  ArrowRight,
+  Eye,
+} from 'lucide-react';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
+import PageHeader from '../../components/common/PageHeader';
+import StatCard from '../../components/common/StatCard';
 import { useAuth } from '../../context/AuthContext';
-import { reportService } from '../../services/services';
-import StatCard from '../../components/dashboard/StatCard';
-import { PageLoader } from '../../components/common/LoadingSpinner';
-import { BookOpen, BookCopy, BookmarkCheck, Receipt, AlertTriangle, Clock } from 'lucide-react';
+import {
+  readingStats,
+  borrowedBooks,
+  readingActivity,
+} from '../../data/user';
+import { recentlyAdded } from '../../data/books';
 
 const StudentDashboard = () => {
   const { user } = useAuth();
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchDashboard();
-  }, []);
-
-  const fetchDashboard = async () => {
-    try {
-      const { data: res } = await reportService.getStudentDashboard();
-      setData(res);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
   };
 
-  if (loading) return <PageLoader />;
-
-  const getDueStatus = (dueDate) => {
-    const now = new Date();
-    const due = new Date(dueDate);
-    const diffDays = Math.ceil((due - now) / (1000 * 60 * 60 * 24));
-    if (diffDays < 0) return { label: `Overdue by ${Math.abs(diffDays)} day(s)`, color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-900/20' };
-    if (diffDays === 0) return { label: 'Due today', color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-900/20' };
-    if (diffDays <= 3) return { label: `Due in ${diffDays} day(s)`, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' };
-    return { label: `Due in ${diffDays} days`, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20' };
-  };
+  const currentBook = borrowedBooks[0];
+  const userName = user?.name ? user.name.split(' ')[0] : 'Reader';
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Welcome */}
-      <div>
-        <h1 className="page-title">Welcome back, {user?.name?.split(' ')[0]}! 👋</h1>
-        <p className="page-subtitle">Here's your library activity overview.</p>
-      </div>
+    <div>
+      <PageHeader
+        title={`${getGreeting()}, ${userName} 👋`}
+        subtitle="Ready to continue your reading journey?"
+      />
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        <StatCard title="Borrowed" value={data?.currentlyBorrowed || 0} icon={BookCopy} gradient="stat-gradient-1" />
-        <StatCard title="Returned" value={data?.totalReturned || 0} icon={BookOpen} gradient="stat-gradient-4" />
-        <StatCard title="Reservations" value={data?.activeReservations || 0} icon={BookmarkCheck} gradient="stat-gradient-3" />
-        <StatCard title="Pending Fines" value={`₹${data?.pendingFines || 0}`} icon={Receipt} gradient="stat-gradient-2" />
-        <StatCard title="Overdue" value={data?.overdueBooks || 0} icon={AlertTriangle} gradient="stat-gradient-5" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <StatCard
+          icon={BookOpen}
+          value={readingStats.booksBorrowed}
+          label="Books Borrowed"
+          color="primary"
+          index={0}
+        />
+        <StatCard
+          icon={BookOpenCheck}
+          value={readingStats.currentlyReading}
+          label="Currently Reading"
+          color="emerald"
+          index={1}
+        />
+        <StatCard
+          icon={Heart}
+          value={readingStats.wishlistCount}
+          label="In Wishlist"
+          color="rose"
+          index={2}
+        />
+        <StatCard
+          icon={Flame}
+          value={`${readingStats.readingStreak} days`}
+          label="Reading Streak"
+          color="amber"
+          index={3}
+        />
       </div>
 
-      {/* Currently Borrowed Books */}
-      <div className="card p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold font-display text-surface-900 dark:text-white">Currently Borrowed</h2>
-          <Link to="/student/my-books" className="text-sm text-primary-600 hover:text-primary-700 font-medium">View All →</Link>
-        </div>
-
-        {data?.currentBorrows?.length === 0 ? (
-          <div className="text-center py-10 text-surface-400">
-            <BookOpen size={40} className="mx-auto mb-3 opacity-30" />
-            <p className="text-sm">No books currently borrowed</p>
-            <Link to="/student/books" className="btn-primary mt-4 inline-flex">Browse Books</Link>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {data?.currentBorrows?.map((issue) => {
-              const status = getDueStatus(issue.dueDate);
-              return (
-                <div key={issue._id} className={`flex items-center gap-4 p-4 rounded-xl ${status.bg} transition-colors`}>
-                  <div className="w-12 h-16 rounded-lg bg-white dark:bg-surface-700 shadow-sm overflow-hidden flex-shrink-0">
-                    {issue.book?.coverImage ? (
-                      <img src={issue.book.coverImage} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <BookOpen size={18} className="text-surface-300" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-surface-900 dark:text-white text-sm truncate">{issue.book?.title}</p>
-                    <p className="text-xs text-surface-500">{issue.book?.author}</p>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <div className={`flex items-center gap-1.5 text-sm font-medium ${status.color}`}>
-                      <Clock size={14} />
-                      {status.label}
-                    </div>
-                    <p className="text-[10px] text-surface-400 mt-0.5">
-                      Due: {new Date(issue.dueDate).toLocaleDateString()}
-                    </p>
-                  </div>
+      {/* Continue Reading */}
+      {currentBook && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="card p-6 mb-8"
+        >
+          <h2 className="text-lg font-display font-bold text-slate-900 dark:text-white mb-5">
+            Continue Your Journey
+          </h2>
+          <div className="flex flex-col sm:flex-row gap-5">
+            {/* Book cover */}
+            <div className="w-24 h-32 sm:w-28 sm:h-36 rounded-xl shadow-lg flex-shrink-0 overflow-hidden bg-surface-100 dark:bg-surface-800">
+              {currentBook.coverImage ? (
+                <img
+                  src={currentBook.coverImage}
+                  alt={currentBook.title}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div
+                  className="w-full h-full flex items-center justify-center"
+                  style={{
+                    background: `linear-gradient(135deg, ${currentBook.coverGradient[0]}, ${currentBook.coverGradient[1]})`,
+                  }}
+                >
+                  <BookOpen size={28} className="text-white/40" />
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+              )}
+            </div>
 
-      {/* Recent Activity */}
-      <div className="card p-6">
-        <h2 className="text-lg font-semibold font-display text-surface-900 dark:text-white mb-4">Recent Activity</h2>
-        {data?.recentActivity?.length === 0 ? (
-          <p className="text-sm text-surface-400 text-center py-6">No recent activity</p>
-        ) : (
-          <div className="space-y-3">
-            {data?.recentActivity?.map((item) => (
-              <div key={item._id} className="flex items-center gap-3 text-sm">
-                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${item.status === 'returned' ? 'bg-emerald-500' : item.status === 'overdue' ? 'bg-red-500' : 'bg-primary-500'}`} />
-                <span className="font-medium text-surface-700 dark:text-surface-300">{item.book?.title}</span>
-                <span className="badge-neutral text-[10px]">{item.status}</span>
-                <span className="text-surface-400 text-xs ml-auto">{new Date(item.createdAt).toLocaleDateString()}</span>
+            {/* Details */}
+            <div className="flex-1 min-w-0">
+              <h3 className="text-xl font-display font-bold text-slate-900 dark:text-white">
+                {currentBook.title}
+              </h3>
+              <p className="text-sm text-surface-400 dark:text-surface-500 mt-1">
+                by {currentBook.author}
+              </p>
+              <span className="badge-info mt-2">{currentBook.category}</span>
+
+              {/* Progress bar */}
+              <div className="mt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-surface-400 font-medium">
+                    Progress
+                  </span>
+                  <span className="text-xs font-bold text-primary-600 dark:text-primary-400">
+                    {currentBook.progress}%
+                  </span>
+                </div>
+                <div className="h-2 bg-surface-100 dark:bg-surface-800 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${currentBook.progress}%` }}
+                    transition={{ duration: 1, delay: 0.5, ease: 'easeOut' }}
+                    className="h-full rounded-full bg-gradient-to-r from-primary-600 to-secondary-600"
+                  />
+                </div>
               </div>
+
+              <Link
+                to={`/books/${currentBook.bookId}`}
+                className="btn-primary mt-4 text-sm"
+              >
+                <Eye size={16} />
+                View Book
+              </Link>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Two columns on desktop */}
+      <div className="grid lg:grid-cols-2 gap-8">
+        {/* Recently Added */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="card p-6"
+        >
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-lg font-display font-bold text-slate-900 dark:text-white">
+              Recently Added
+            </h2>
+            <Link
+              to="/explore"
+              className="text-xs font-medium text-primary-600 dark:text-primary-400 hover:underline flex items-center gap-1"
+            >
+              See all <ArrowRight size={12} />
+            </Link>
+          </div>
+
+          <div className="space-y-3">
+            {recentlyAdded.slice(0, 4).map((book) => (
+              <Link
+                key={book.id}
+                to={`/books/${book.id}`}
+                className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-surface-50 dark:hover:bg-surface-800/50 transition-colors group"
+              >
+                <div className="w-10 h-14 rounded-lg flex-shrink-0 overflow-hidden bg-surface-100 dark:bg-surface-800">
+                  {book.coverImage ? (
+                    <img
+                      src={book.coverImage}
+                      alt={book.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div
+                      className="w-full h-full flex items-center justify-center"
+                      style={{
+                        background: `linear-gradient(135deg, ${book.coverGradient[0]}, ${book.coverGradient[1]})`,
+                      }}
+                    >
+                      <BookOpen size={14} className="text-white/50" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-slate-900 dark:text-white truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                    {book.title}
+                  </p>
+                  <p className="text-xs text-surface-400 truncate">
+                    {book.author}
+                  </p>
+                </div>
+                <span
+                  className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                    book.availableCopies > 0
+                      ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                      : 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400'
+                  }`}
+                >
+                  {book.availableCopies > 0 ? 'Available' : 'Out'}
+                </span>
+              </Link>
             ))}
           </div>
-        )}
+        </motion.div>
+
+        {/* Reading Activity Chart */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="card p-6"
+        >
+          <h2 className="text-lg font-display font-bold text-slate-900 dark:text-white mb-5">
+            Reading Activity
+          </h2>
+          <div className="h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={readingActivity}>
+                <defs>
+                  <linearGradient id="colorPages" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="currentColor"
+                  className="text-surface-100 dark:text-surface-800"
+                />
+                <XAxis
+                  dataKey="name"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12 }}
+                  className="text-surface-400"
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12 }}
+                  className="text-surface-400"
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'var(--tooltip-bg, #fff)',
+                    border: '1px solid var(--tooltip-border, #e2e8f0)',
+                    borderRadius: '12px',
+                    fontSize: '13px',
+                    boxShadow: '0 8px 24px -4px rgba(0,0,0,0.1)',
+                  }}
+                  labelStyle={{ fontWeight: 600 }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="pages"
+                  stroke="#4f46e5"
+                  strokeWidth={2.5}
+                  fillOpacity={1}
+                  fill="url(#colorPages)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

@@ -1,203 +1,257 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { bookService, issueService, reservationService, categoryService } from '../../services/services';
-import BookCard from '../../components/books/BookCard';
-import Pagination from '../../components/common/Pagination';
-import { PageLoader } from '../../components/common/LoadingSpinner';
-import { EmptyState } from '../../components/common/EmptyState';
-import { Search, SlidersHorizontal, X, Grid3X3, List } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { useState, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { SlidersHorizontal, X, ChevronDown } from 'lucide-react';
+import PageHeader from '../../components/common/PageHeader';
+import SearchBar from '../../components/common/SearchBar';
+import BookCard from '../../components/common/BookCard';
+import EmptyState from '../../components/common/EmptyState';
+import { books } from '../../data/books';
+import { categories } from '../../data/categories';
+
+const sortOptions = [
+  { value: 'popular', label: 'Most Popular' },
+  { value: 'rating', label: 'Highest Rated' },
+  { value: 'title', label: 'Title A-Z' },
+  { value: 'newest', label: 'Newest First' },
+];
 
 const StudentBooks = () => {
-  const navigate = useNavigate();
-  const [books, setBooks] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [pages, setPages] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState({ category: '', available: '' });
+  const [searchParams] = useSearchParams();
+  const initialQuery = searchParams.get('q') || '';
+
+  const [search, setSearch] = useState(initialQuery);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [availability, setAvailability] = useState('');
+  const [sortBy, setSortBy] = useState('popular');
   const [showFilters, setShowFilters] = useState(false);
-  const [view, setView] = useState('grid');
+  const [visibleCount, setVisibleCount] = useState(8);
 
-  useEffect(() => {
-    fetchBooks();
-  }, [page, filters]);
+  const filteredBooks = useMemo(() => {
+    let result = [...books];
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
-    const timer = setTimeout(() => { setPage(1); fetchBooks(); }, 400);
-    return () => clearTimeout(timer);
-  }, [search]);
-
-  const fetchBooks = async () => {
-    try {
-      setLoading(true);
-      const params = { page, limit: 12, search };
-      if (filters.category) params.category = filters.category;
-      if (filters.available) params.available = filters.available;
-      const { data } = await bookService.getBooks(params);
-      setBooks(data.books);
-      setPages(data.pages);
-      setTotal(data.total);
-    } catch (err) {
-      toast.error('Failed to load books');
-    } finally {
-      setLoading(false);
+    // Search
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter(
+        (b) =>
+          b.title.toLowerCase().includes(q) ||
+          b.author.toLowerCase().includes(q) ||
+          b.category.toLowerCase().includes(q)
+      );
     }
-  };
 
-  const fetchCategories = async () => {
-    try {
-      const { data } = await categoryService.getCategories();
-      setCategories(data);
-    } catch (err) {}
-  };
-
-  const handleIssue = async (book) => {
-    try {
-      await issueService.issueBook({ bookId: book._id });
-      toast.success(`"${book.title}" issued successfully!`);
-      fetchBooks();
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to issue book');
+    // Category
+    if (selectedCategory) {
+      result = result.filter((b) => b.category === selectedCategory);
     }
-  };
 
-  const handleReserve = async (book) => {
-    try {
-      await reservationService.reserveBook({ bookId: book._id });
-      toast.success(`"${book.title}" reserved successfully!`);
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to reserve book');
+    // Availability
+    if (availability === 'available') {
+      result = result.filter((b) => b.availableCopies > 0);
+    } else if (availability === 'unavailable') {
+      result = result.filter((b) => b.availableCopies === 0);
     }
-  };
+
+    // Sort
+    switch (sortBy) {
+      case 'rating':
+        result.sort((a, b) => b.rating - a.rating);
+        break;
+      case 'title':
+        result.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case 'newest':
+        result.sort((a, b) => b.year - a.year);
+        break;
+      default:
+        result.sort((a, b) => b.borrowCount - a.borrowCount);
+    }
+
+    return result;
+  }, [search, selectedCategory, availability, sortBy]);
+
+  const visibleBooks = filteredBooks.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredBooks.length;
+
+  const activeFilterCount = [selectedCategory, availability].filter(Boolean).length;
 
   const clearFilters = () => {
-    setFilters({ category: '', available: '' });
-    setSearch('');
-    setPage(1);
+    setSelectedCategory('');
+    setAvailability('');
+    setSortBy('popular');
   };
 
-  const hasActiveFilters = filters.category || filters.available || search;
-
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="page-title">Book Catalog</h1>
-        <p className="page-subtitle">Browse and discover books from our collection. {total} book(s) found.</p>
-      </div>
+    <div>
+      <PageHeader
+        title="Explore Books"
+        subtitle={`${filteredBooks.length} books available to explore`}
+      />
 
-      {/* Search & Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400" />
-          <input
-            type="text"
-            className="input pl-10"
-            placeholder="Search by title, author, or ISBN..."
+      {/* Search + Filter bar */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <div className="flex-1">
+          <SearchBar
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={setSearch}
+            size="sm"
+            placeholder="Search by title, author, or category..."
           />
-          {search && (
-            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-600">
-              <X size={16} />
-            </button>
+        </div>
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className={`btn-secondary text-sm relative ${showFilters ? 'ring-2 ring-primary-500/30' : ''}`}
+        >
+          <SlidersHorizontal size={16} />
+          Filters
+          {activeFilterCount > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-primary-600 text-white text-[10px] font-bold flex items-center justify-center">
+              {activeFilterCount}
+            </span>
           )}
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => setShowFilters(!showFilters)} className={`btn-secondary ${showFilters ? 'ring-2 ring-primary-500' : ''}`}>
-            <SlidersHorizontal size={16} /> Filters
-          </button>
-          <div className="flex rounded-xl border border-surface-200 dark:border-surface-700 overflow-hidden">
-            <button onClick={() => setView('grid')} className={`p-2.5 ${view === 'grid' ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600' : 'text-surface-400 hover:bg-surface-50 dark:hover:bg-surface-800'}`}>
-              <Grid3X3 size={16} />
-            </button>
-            <button onClick={() => setView('list')} className={`p-2.5 ${view === 'list' ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600' : 'text-surface-400 hover:bg-surface-50 dark:hover:bg-surface-800'}`}>
-              <List size={16} />
-            </button>
-          </div>
-        </div>
+        </button>
       </div>
 
-      {/* Filter Panel */}
-      {showFilters && (
-        <div className="card p-4 animate-slide-down">
-          <div className="flex flex-wrap gap-4">
-            <div className="min-w-[180px]">
-              <label className="input-label">Category</label>
-              <select className="input" value={filters.category} onChange={(e) => { setFilters({...filters, category: e.target.value}); setPage(1); }}>
-                <option value="">All Categories</option>
-                {categories.map((c) => <option key={c._id} value={c._id}>{c.name}</option>)}
-              </select>
-            </div>
-            <div className="min-w-[180px]">
-              <label className="input-label">Availability</label>
-              <select className="input" value={filters.available} onChange={(e) => { setFilters({...filters, available: e.target.value}); setPage(1); }}>
-                <option value="">All</option>
-                <option value="true">Available</option>
-                <option value="false">Unavailable</option>
-              </select>
-            </div>
-            {hasActiveFilters && (
-              <div className="flex items-end">
-                <button onClick={clearFilters} className="btn-ghost text-sm text-red-500">
-                  <X size={14} /> Clear All
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Books Grid/List */}
-      {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="card p-4 space-y-3">
-              <div className="skeleton h-48 w-full" />
-              <div className="skeleton h-4 w-3/4" />
-              <div className="skeleton h-3 w-1/2" />
-            </div>
-          ))}
-        </div>
-      ) : books.length === 0 ? (
-        <EmptyState title="No books found" message="Try changing your search or filters." action={clearFilters} actionLabel="Clear Filters" />
-      ) : view === 'grid' ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-          {books.map((book) => (
-            <BookCard key={book._id} book={book} onIssue={handleIssue} onReserve={handleReserve} />
-          ))}
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {books.map((book) => (
-            <div key={book._id} className="card p-4 flex items-center gap-4 hover:shadow-card-hover cursor-pointer" onClick={() => navigate(`/books/${book._id}`)}>
-              <div className="w-16 h-20 rounded-lg overflow-hidden bg-surface-100 dark:bg-surface-700 flex-shrink-0">
-                {book.coverImage ? (
-                  <img src={book.coverImage} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-surface-300"><Search size={20} /></div>
+      {/* Filter panel */}
+      <AnimatePresence>
+        {showFilters && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25 }}
+            className="overflow-hidden mb-6"
+          >
+            <div className="card p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+                  Filters
+                </h3>
+                {activeFilterCount > 0 && (
+                  <button
+                    onClick={clearFilters}
+                    className="text-xs text-primary-600 dark:text-primary-400 font-medium hover:underline"
+                  >
+                    Clear all
+                  </button>
                 )}
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-surface-900 dark:text-white truncate">{book.title}</p>
-                <p className="text-sm text-surface-500">{book.author}</p>
-                <span className="badge-neutral text-[10px] mt-1">{book.category?.name}</span>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* Category */}
+                <div>
+                  <label className="text-xs font-medium text-surface-500 mb-1.5 block">
+                    Category
+                  </label>
+                  <div className="relative">
+                    <select
+                      className="input text-sm pr-10 appearance-none"
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                    >
+                      <option value="">All Categories</option>
+                      {categories.map((c) => (
+                        <option key={c.id} value={c.name}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-surface-400 pointer-events-none" />
+                  </div>
+                </div>
+
+                {/* Availability */}
+                <div>
+                  <label className="text-xs font-medium text-surface-500 mb-1.5 block">
+                    Availability
+                  </label>
+                  <div className="relative">
+                    <select
+                      className="input text-sm pr-10 appearance-none"
+                      value={availability}
+                      onChange={(e) => setAvailability(e.target.value)}
+                    >
+                      <option value="">All</option>
+                      <option value="available">Available</option>
+                      <option value="unavailable">Unavailable</option>
+                    </select>
+                    <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-surface-400 pointer-events-none" />
+                  </div>
+                </div>
+
+                {/* Sort */}
+                <div>
+                  <label className="text-xs font-medium text-surface-500 mb-1.5 block">
+                    Sort By
+                  </label>
+                  <div className="relative">
+                    <select
+                      className="input text-sm pr-10 appearance-none"
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                    >
+                      {sortOptions.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-surface-400 pointer-events-none" />
+                  </div>
+                </div>
               </div>
-              <span className={book.availableCopies > 0 ? 'badge-success' : 'badge-danger'}>
-                {book.availableCopies > 0 ? `${book.availableCopies} available` : 'Unavailable'}
-              </span>
             </div>
-          ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Active filter chips */}
+      {activeFilterCount > 0 && (
+        <div className="flex flex-wrap gap-2 mb-5">
+          {selectedCategory && (
+            <span className="badge-info">
+              {selectedCategory}
+              <button onClick={() => setSelectedCategory('')}>
+                <X size={12} />
+              </button>
+            </span>
+          )}
+          {availability && (
+            <span className="badge-info">
+              {availability === 'available' ? 'Available' : 'Unavailable'}
+              <button onClick={() => setAvailability('')}>
+                <X size={12} />
+              </button>
+            </span>
+          )}
         </div>
       )}
 
-      <Pagination page={page} pages={pages} onPageChange={setPage} />
+      {/* Book grid */}
+      {visibleBooks.length > 0 ? (
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+            {visibleBooks.map((book, i) => (
+              <BookCard key={book.id} book={book} index={i} />
+            ))}
+          </div>
+
+          {/* Load More */}
+          {hasMore && (
+            <div className="text-center mt-10">
+              <button
+                onClick={() => setVisibleCount((c) => c + 8)}
+                className="btn-secondary text-sm"
+              >
+                Load More Books
+              </button>
+            </div>
+          )}
+        </>
+      ) : (
+        <EmptyState preset="no-results" />
+      )}
     </div>
   );
 };
