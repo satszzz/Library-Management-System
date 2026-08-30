@@ -210,6 +210,7 @@ RESERVATION_EXPIRY_HOURS=48
 
 ---
 
+
 ## 📄 License
 
 MIT License — Built with ❤️ using the MERN Stack.
