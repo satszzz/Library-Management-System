@@ -157,7 +157,6 @@ RESERVATION_EXPIRY_HOURS=48
 | Student | rahul@student.com  | student123 |
 
 *(More student accounts: priya@student.com, amit@student.com, etc. — all with password `student123`)*
-
 ---
 
 ## 📡 API Endpoints
