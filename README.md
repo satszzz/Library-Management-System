@@ -126,7 +126,6 @@ npm run dev             # Start frontend (port 5173)
 ```
 http://localhost:5173
 ```
-
 ---
 
 ## 🔑 Environment Variables
