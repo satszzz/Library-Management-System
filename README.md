@@ -1,6 +1,7 @@
 # 📚 LibraVerse — Library Management System
 
 A full-stack **Library Management System** built with the **MERN Stack** (MongoDB, Express.js, React.js, Node.js). Features a premium modern UI, JWT authentication, role-based authorization, book catalog with search/filter, issue/return system with automatic fine calculation, reservation queue, notifications, dark mode, and comprehensive admin dashboard with analytics.
+
 ---
 
 ## ✨ Features
