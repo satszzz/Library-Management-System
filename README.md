@@ -38,7 +38,6 @@ A full-stack **Library Management System** built with the **MERN Stack** (MongoD
 - Toast notifications
 - Glass-morphism cards
 - Gradient stat cards
-
 ---
 
 ## 🛠️ Tech Stack
