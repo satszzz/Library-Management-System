@@ -103,7 +103,6 @@ A full-stack **Library Management System** built with the **MERN Stack** (MongoD
 ```bash
 git clone <repo-url>
 cd "Library Management System (IssueReturn, Catalog)"
-
 ```
 
 ### 2. Backend Setup
